@@ -1,4 +1,4 @@
-# Learing Google > [!CAUTION]
+# Learing Google auth for React
 
 > Contains configurations for implementing google auth with React frontend and node backend
 
