@@ -25,7 +25,6 @@ interface GoogleTokens {
 interface AuthResponse {
   user: GoogleUser;
   googleTokens: GoogleTokens;
-  appToken: string;
 }
 
 function Home() {
@@ -35,24 +34,27 @@ function Home() {
   const googleLogin = useGoogleLogin({
     onSuccess: async ({ code }) => {
       try {
-        const res = await axios.post("http://localhost:3000/auth/google", {
-          code,
-        });
+        const res = await axios.post(
+          "http://localhost:3000/auth/google",
+          {
+            code,
+          },
+          { withCredentials: true },
+        );
         const authResponse: AuthResponse = res.data;
-
-        console.log(authResponse);
 
         const name = authResponse.user.name;
         setUser(name);
 
+        console.log(authResponse);
         console.log("Google Tokens: ", authResponse.googleTokens);
-        console.log("App token from backend: ", authResponse.appToken);
         navigate("/app");
       } catch (error) {
         console.error("Login error: ", error);
       }
     },
     flow: "auth-code",
+    onError: (errorResponse) => console.log(errorResponse),
   });
   return (
     <div>

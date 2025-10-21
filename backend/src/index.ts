@@ -3,6 +3,7 @@ import dotenv from 'dotenv';
 import testRouter from './routes/test.route';
 import cors from 'cors';
 import jwt from 'jsonwebtoken';
+import cookieParser from 'cookie-parser';
 import { OAuth2Client, UserRefreshClient } from 'google-auth-library';
 
 dotenv.config();
@@ -26,6 +27,8 @@ const oAuth2Client = new OAuth2Client(
   process.env.CLIENT_SECRET,
   'postmessage'
 );
+
+app.use(cookieParser());
 
 app.use(
   cors({
@@ -66,11 +69,17 @@ app.post('/auth/google', async (req, res) => {
       { expiresIn: '1d' }
     );
 
+    res.cookie('appToken', appToken, {
+      httpOnly: true, // Not accessible via JS
+      secure: process.env.NODE_ENV === 'production', // HTTPS only in prod
+      sameSite: 'lax', // Adjust if using cross-site requests
+      maxAge: 24 * 60 * 60 * 1000, // 1 day
+    });
+
     // Send back to frontend
     res.json({
       user,
       googleTokens: tokens,
-      appToken,
     });
   } catch (error) {
     console.log(error);
@@ -93,6 +102,15 @@ app.post('/auth/google/refresh-token', async (req, res) => {
     console.error(error);
     res.status(400).json({ message: 'Failed to refresh token' });
   }
+});
+
+app.post('/auth/logout', (req, res) => {
+  res.clearCookie('appToken', {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+  });
+  res.json({ message: 'Logged out' });
 });
 
 app.use((req, res, next) => {

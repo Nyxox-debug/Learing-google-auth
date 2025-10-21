@@ -1,11 +1,11 @@
-import { googleLogout } from "@react-oauth/google";
 import { Navigate } from "react-router-dom";
 import { useAuth } from "../store/authContext";
 function App() {
-  const { user } = useAuth();
-  function handleLogout() {
-    googleLogout();
-  }
+  const { user, logout } = useAuth();
+  const handleLogout = async () => {
+    await logout();
+    <Navigate to={"/"} replace />;
+  };
   return (
     <div>
       {user ? (
